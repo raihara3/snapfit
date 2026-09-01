@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="SnapFit — a mobile camera web app with filters, lenses and frames" />
+  <title>SnapFit</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23000'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23f5f5f7' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='3.5' fill='%23ffd60a'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+<body>
+  <div id="app">
+
+    <div id="start-overlay">
+      <h1 class="brand">SnapFit</h1>
+      <p class="tagline">フィルターとフレームで、撮る楽しさを。</p>
+      <button id="start-button" type="button">カメラをはじめる</button>
+      <p id="start-error" class="start-error" hidden></p>
+    </div>
+
+    <header id="top-bar" hidden>
+      <button id="frame-button" class="icon-button" type="button" aria-label="フレームを選ぶ">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="4" y="3" width="16" height="18" rx="1.5" />
+          <rect x="7" y="6" width="10" height="10" rx="0.5" />
+        </svg>
+      </button>
+      <div id="zoom-pill">1.0×</div>
+      <button id="flip-button" class="icon-button" type="button" aria-label="カメラを切り替える">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M4 9a8 8 0 0 1 14-3.5" />
+          <path d="M18 2v4h-4" />
+          <path d="M20 15a8 8 0 0 1-14 3.5" />
+          <path d="M6 22v-4h4" />
+        </svg>
+      </button>
+    </header>
+
+    <main id="viewfinder" hidden>
+      <canvas id="preview-canvas"></canvas>
+      <div id="flash-overlay"></div>
+      <div id="collage-progress" hidden></div>
+      <div id="record-indicator" hidden><span class="record-dot"></span><span id="record-time">0:00</span></div>
+    </main>
+
+    <section id="controls" hidden>
+      <div id="lens-row" role="tablist" aria-label="レンズ"></div>
+      <div id="filter-row" role="tablist" aria-label="フィルター"></div>
+      <div id="mode-row" role="tablist" aria-label="撮影モード">
+        <button class="mode-chip" data-mode="photo" aria-selected="true" type="button">写真</button>
+        <button class="mode-chip" data-mode="video" aria-selected="false" type="button">動画</button>
+        <button class="mode-chip" data-mode="collage" aria-selected="false" type="button">連写</button>
+      </div>
+      <div id="bottom-bar">
+        <button id="thumb-button" class="side-slot" type="button" aria-label="最後の撮影を見る" hidden>
+          <img id="thumb-image" alt="" />
+        </button>
+        <div class="side-slot" id="thumb-placeholder"></div>
+        <button id="shutter-button" type="button" aria-label="シャッター">
+          <span id="shutter-core"></span>
+        </button>
+        <button id="layout-button" class="side-slot icon-button" type="button" aria-label="レイアウトを選ぶ" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="3" width="8" height="8" rx="1" />
+            <rect x="13" y="3" width="8" height="8" rx="1" />
+            <rect x="3" y="13" width="8" height="8" rx="1" />
+            <rect x="13" y="13" width="8" height="8" rx="1" />
+          </svg>
+        </button>
+        <div class="side-slot" id="layout-placeholder"></div>
+      </div>
+    </section>
+
+    <div id="preview-overlay" hidden>
+      <div id="preview-media">
+        <img id="preview-image" alt="撮影プレビュー" hidden />
+        <video id="preview-video" controls playsinline hidden></video>
+      </div>
+      <div id="preview-actions">
+        <button id="preview-close" class="pill-button" type="button">閉じる</button>
+        <button id="preview-share" class="pill-button" type="button" hidden>共有</button>
+        <button id="preview-save" class="pill-button primary" type="button">保存</button>
+      </div>
+    </div>
+
+    <div id="frame-sheet" class="sheet" hidden>
+      <p class="sheet-title">フレーム</p>
+      <div class="sheet-options" id="frame-options"></div>
+    </div>
+
+    <div id="layout-sheet" class="sheet" hidden>
+      <p class="sheet-title">レイアウト</p>
+      <div class="sheet-options" id="layout-options"></div>
+    </div>
+
+    <div id="sheet-backdrop" hidden></div>
+    <div id="toast" hidden></div>
+  </div>
+
+  <video id="camera-video" playsinline muted autoplay></video>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
