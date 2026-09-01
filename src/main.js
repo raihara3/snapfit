@@ -1,3 +1,5 @@
+import { inject } from '@vercel/analytics';
+
 import { CameraManager, describeCameraError } from './camera.js';
 import { COLLAGE_LAYOUTS, composeCollage, getCollageLayout, shrinkToCellSize } from './collage.js';
 import { FILTERS } from './filters.js';
@@ -55,6 +57,8 @@ const elements = {
   sheetBackdrop: document.getElementById('sheet-backdrop'),
   toast: document.getElementById('toast'),
 };
+
+inject();
 
 const camera = new CameraManager(elements.video);
 let renderer = null;

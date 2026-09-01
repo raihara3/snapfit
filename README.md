@@ -45,6 +45,8 @@ npm run preview  # serve the production build
 ```
 
 The output is fully static; deploy `dist/` to any static host (HTTPS required).
+Vercel Web Analytics is injected via `@vercel/analytics`; it only reports when
+the app is deployed on Vercel and stays inert elsewhere.
 
 ## Architecture
 
