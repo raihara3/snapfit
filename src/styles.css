@@ -111,10 +111,20 @@ button {
 #top-bar {
   position: relative;
   z-index: 10;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   padding: calc(var(--safe-top) + 10px) 18px 10px;
+}
+
+.top-group {
+  display: flex;
+  gap: 10px;
+  justify-self: start;
+}
+
+#flip-button {
+  justify-self: end;
 }
 
 .icon-button {
@@ -274,7 +284,8 @@ button {
   transform: scale(1.06);
 }
 
-#filter-row {
+#filter-row,
+.chip-scroll {
   display: flex;
   gap: 8px;
   overflow-x: auto;
@@ -283,7 +294,8 @@ button {
   scrollbar-width: none;
 }
 
-#filter-row::-webkit-scrollbar {
+#filter-row::-webkit-scrollbar,
+.chip-scroll::-webkit-scrollbar {
   display: none;
 }
 
@@ -451,6 +463,68 @@ button {
 .pill-button.primary {
   background: var(--text-primary);
   color: #000;
+}
+
+/* ---- Photo editor overlay ---- */
+
+#editor-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: calc(var(--safe-top) + 12px) 0 calc(var(--safe-bottom) + 24px);
+}
+
+#editor-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 18px;
+}
+
+#editor-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.editor-header-spacer {
+  width: 40px;
+  justify-self: end;
+}
+
+#editor-media {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  margin: 0 18px;
+  background-image:
+    linear-gradient(45deg, #17171a 25%, transparent 25%, transparent 75%, #17171a 75%),
+    linear-gradient(45deg, #17171a 25%, transparent 25%, transparent 75%, #17171a 75%);
+  background-color: #101012;
+  background-size: 22px 22px;
+  background-position: 0 0, 11px 11px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+#editor-canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+#editor-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
 }
 
 /* ---- Sheets ---- */

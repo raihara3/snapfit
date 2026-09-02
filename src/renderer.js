@@ -1,6 +1,6 @@
-// WebGL pipeline that renders the camera video through the active filter,
-// lens effect (fisheye) and digital zoom — both for the live viewfinder
-// and for full-resolution still capture.
+// WebGL pipeline that renders a texture source (camera video, image or
+// canvas) through the active filter, lens effect (fisheye) and digital
+// zoom — both for the live viewfinder and for full-resolution capture.
 
 import { getFilter } from './filters.js';
 
@@ -70,9 +70,9 @@ void main() {
 const MAX_CAPTURE_DIMENSION = 4096;
 
 export class Renderer {
-  constructor(canvas, video) {
+  constructor(canvas, source) {
     this.canvas = canvas;
-    this.video = video;
+    this.source = source;
     this.gl = canvas.getContext('webgl', {
       preserveDrawingBuffer: true,
       antialias: false,
@@ -159,6 +159,22 @@ export class Renderer {
     this.filter = getFilter(filterId);
   }
 
+  setSource(source) {
+    this.source = source;
+  }
+
+  getSourceSize() {
+    return {
+      width: this.source.videoWidth ?? this.source.naturalWidth ?? this.source.width ?? 1,
+      height: this.source.videoHeight ?? this.source.naturalHeight ?? this.source.height ?? 1,
+    };
+  }
+
+  sourceIsReady() {
+    return !('readyState' in this.source)
+      || this.source.readyState >= this.source.HAVE_CURRENT_DATA;
+  }
+
   setFisheye(enabled) {
     this.fisheyeStrength = enabled ? 2.2 : 0;
   }
@@ -179,20 +195,19 @@ export class Renderer {
     this.canvas.height = Math.round(cssHeight * pixelRatio);
   }
 
-  // Maps viewfinder UV to texture UV: cover-crop of the video into the
+  // Maps viewfinder UV to texture UV: cover-crop of the source into the
   // output aspect, then digital zoom, then horizontal mirror for the
   // front camera.
   computeTextureTransform(outputWidth, outputHeight) {
-    const videoWidth = this.video.videoWidth || 1;
-    const videoHeight = this.video.videoHeight || 1;
+    const { width: sourceWidth, height: sourceHeight } = this.getSourceSize();
     const outputAspect = outputWidth / outputHeight;
-    const videoAspect = videoWidth / videoHeight;
+    const sourceAspect = sourceWidth / sourceHeight;
     let cropX = 1;
     let cropY = 1;
-    if (videoAspect > outputAspect) {
-      cropX = outputAspect / videoAspect;
+    if (sourceAspect > outputAspect) {
+      cropX = outputAspect / sourceAspect;
     } else {
-      cropY = videoAspect / outputAspect;
+      cropY = sourceAspect / outputAspect;
     }
     const scaleX = cropX / this.zoom;
     const scaleY = cropY / this.zoom;
@@ -200,28 +215,28 @@ export class Renderer {
       return {
         scale: [-scaleX, scaleY],
         offset: [(1 + scaleX) / 2, (1 - scaleY) / 2],
-        visibleWidth: videoWidth * scaleX,
-        visibleHeight: videoHeight * scaleY,
+        visibleWidth: sourceWidth * scaleX,
+        visibleHeight: sourceHeight * scaleY,
       };
     }
     return {
       scale: [scaleX, scaleY],
       offset: [(1 - scaleX) / 2, (1 - scaleY) / 2],
-      visibleWidth: videoWidth * scaleX,
-      visibleHeight: videoHeight * scaleY,
+      visibleWidth: sourceWidth * scaleX,
+      visibleHeight: sourceHeight * scaleY,
     };
   }
 
-  renderFrame(uploadVideoFrame = true) {
+  renderFrame(uploadSourceFrame = true) {
     const gl = this.gl;
-    if (this.video.readyState < this.video.HAVE_CURRENT_DATA) return;
+    if (!this.sourceIsReady()) return;
     const width = this.canvas.width;
     const height = this.canvas.height;
     if (width === 0 || height === 0) return;
 
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
-    if (uploadVideoFrame) {
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.video);
+    if (uploadSourceFrame) {
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.source);
     }
 
     const { program, positionLocation, uniforms } = this.getProgram(this.filter);
@@ -258,8 +273,8 @@ export class Renderer {
   }
 
   // Renders one frame at the native resolution of the visible (cropped,
-  // zoomed) video region and returns it as a 2D canvas for compositing.
-  captureStill() {
+  // zoomed) source region and returns it as a 2D canvas for compositing.
+  captureStill(maxDimension = MAX_CAPTURE_DIMENSION) {
     const displayWidth = this.canvas.width;
     const displayHeight = this.canvas.height;
     const transform = this.computeTextureTransform(displayWidth, displayHeight);
@@ -267,8 +282,8 @@ export class Renderer {
     let captureWidth = Math.round(Math.abs(transform.visibleWidth));
     let captureHeight = Math.round(Math.abs(transform.visibleHeight));
     const largestSide = Math.max(captureWidth, captureHeight);
-    if (largestSide > MAX_CAPTURE_DIMENSION) {
-      const downscale = MAX_CAPTURE_DIMENSION / largestSide;
+    if (largestSide > maxDimension) {
+      const downscale = maxDimension / largestSide;
       captureWidth = Math.round(captureWidth * downscale);
       captureHeight = Math.round(captureHeight * downscale);
     }

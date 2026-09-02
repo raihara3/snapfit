@@ -17,8 +17,8 @@ Supported browsers: iPhone Safari and Android Chrome (modern versions).
   selection where the device exposes them (with a digital 2× fallback), plus a
   simulated fisheye lens effect.
 - **Live filters** — normal, film, toy camera, pixel-art, pale/white, vivid,
-  mono and retro, implemented as WebGL fragment shaders and applied to photos
-  and videos alike.
+  mono, tilt-shift miniature (diorama-style focus band) and retro, implemented
+  as WebGL fragment shaders and applied to photos and videos alike.
 - **Frames** — Instax-style (cheki) card, perforated postage stamp and 35mm
   film strip. The instax and stamp frames keep a transparent outer margin
   (exported as PNG); the film frame has transparent sprocket holes.
@@ -26,6 +26,8 @@ Supported browsers: iPhone Safari and Android Chrome (modern versions).
   and composed into a single image, combinable with any frame.
 - **Save to device** — download or hand off via the Web Share sheet (which
   allows saving straight to the photo library on iOS).
+- **Edit existing photos** — import a photo from the device and apply the same
+  filters and frames at full resolution, without cropping.
 
 ## Development
 
@@ -57,6 +59,7 @@ the app is deployed on Vercel and stays inert elsewhere.
 | `src/filters.js` | Filter definitions as fragment-shader grading snippets |
 | `src/frames.js` | 2D-canvas frame compositors (instax / stamp / film) |
 | `src/collage.js` | Multi-shot layouts and compositing |
+| `src/editor.js` | Imported-photo editing: same pipeline applied to picked image files |
 | `src/recorder.js` | `MediaRecorder` over the filtered canvas stream + microphone audio |
 | `src/save.js` | Blob download and Web Share integration |
 | `src/main.js` | UI state and event wiring |

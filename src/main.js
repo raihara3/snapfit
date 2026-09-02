@@ -2,6 +2,7 @@ import { inject } from '@vercel/analytics';
 
 import { CameraManager, describeCameraError } from './camera.js';
 import { COLLAGE_LAYOUTS, composeCollage, getCollageLayout, shrinkToCellSize } from './collage.js';
+import { PhotoEditor } from './editor.js';
 import { FILTERS } from './filters.js';
 import { FRAMES, applyFrame } from './frames.js';
 import { CanvasRecorder } from './recorder.js';
@@ -50,6 +51,15 @@ const elements = {
   previewClose: document.getElementById('preview-close'),
   previewShare: document.getElementById('preview-share'),
   previewSave: document.getElementById('preview-save'),
+  importButton: document.getElementById('import-button'),
+  importInput: document.getElementById('import-input'),
+  editorOverlay: document.getElementById('editor-overlay'),
+  editorCanvas: document.getElementById('editor-canvas'),
+  editorFilterRow: document.getElementById('editor-filter-row'),
+  editorFrameRow: document.getElementById('editor-frame-row'),
+  editorClose: document.getElementById('editor-close'),
+  editorSave: document.getElementById('editor-save'),
+  editorShare: document.getElementById('editor-share'),
   frameSheet: document.getElementById('frame-sheet'),
   frameOptions: document.getElementById('frame-options'),
   layoutSheet: document.getElementById('layout-sheet'),
@@ -612,6 +622,37 @@ elements.previewShare.addEventListener('click', async () => {
     await shareBlob(capture.blob, capture.fileName);
   } catch (error) {
     if (error.name !== 'AbortError') showToast('共有に失敗しました');
+  }
+});
+
+// ---- Photo import editor ----
+
+const photoEditor = new PhotoEditor({
+  overlay: elements.editorOverlay,
+  canvas: elements.editorCanvas,
+  filterRow: elements.editorFilterRow,
+  frameRow: elements.editorFrameRow,
+  close: elements.editorClose,
+  save: elements.editorSave,
+  share: elements.editorShare,
+}, { onToast: showToast });
+
+elements.importButton.addEventListener('click', () => {
+  if (recorder?.recording) {
+    showToast('録画中は編集できません');
+    return;
+  }
+  elements.importInput.click();
+});
+
+elements.importInput.addEventListener('change', async () => {
+  const [file] = elements.importInput.files;
+  elements.importInput.value = '';
+  if (!file) return;
+  try {
+    await photoEditor.open(file);
+  } catch {
+    showToast('画像を読み込めませんでした');
   }
 });
 
